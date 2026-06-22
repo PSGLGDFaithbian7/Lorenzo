@@ -1,0 +1,498 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dD:/Lorenzo/rtl
+vlte_boundary_ctrl
+Z1 DXx6 sv_std 3 std 0 22 AD7iAPLo6nTIKk<N0eo=D3
+Z2 DXx4 work 7 lte_pkg 0 22 MdKFS@b7L7TXznTl?>]A=2
+DXx4 work 25 lte_boundary_ctrl_sv_unit 0 22 lB:IEMQ4GgMU5V]gjL=D`1
+Z3 VDg1SIo80bB@j0V0VzS_@n1
+r1
+!s85 0
+31
+!i10b 1
+!s100 7i1:cMM@_GW3<FP6_^;kf1
+I>mzY;IDa2KdES`hCA615V2
+!s105 lte_boundary_ctrl_sv_unit
+S1
+R0
+Z4 w1781960090
+Z5 8lte_boundary_ctrl.sv
+Z6 Flte_boundary_ctrl.sv
+L0 21
+Z7 OL;L;10.6e;65
+Z8 !s108 1781960424.000000
+!s107 lte_task_ctrl_top.sv|lte_legacy_mux.sv|lte_csr.sv|lte_task_scoreboard.sv|lte_error_ctrl.sv|lte_task_dispatch.sv|lte_boundary_ctrl.sv|lte_loop_nest_ctrl.sv|lte_task_context.sv|lte_tdt_decode.sv|lte_pkg.sv|
+Z9 !s90 -sv|lte_pkg.sv|lte_tdt_decode.sv|lte_task_context.sv|lte_loop_nest_ctrl.sv|lte_boundary_ctrl.sv|lte_task_dispatch.sv|lte_error_ctrl.sv|lte_task_scoreboard.sv|lte_csr.sv|lte_legacy_mux.sv|lte_task_ctrl_top.sv|
+!i113 0
+Z10 o-sv -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z11 tCvgOpt 0
+Xlte_boundary_ctrl_sv_unit
+R1
+R2
+VlB:IEMQ4GgMU5V]gjL=D`1
+r1
+!s85 0
+31
+!i10b 1
+!s100 L@7[<F]cR9mAAU]O3B4bI0
+IlB:IEMQ4GgMU5V]gjL=D`1
+!i103 1
+S1
+R0
+R4
+R5
+R6
+L0 19
+R7
+R8
+Z12 !s107 lte_task_ctrl_top.sv|lte_legacy_mux.sv|lte_csr.sv|lte_task_scoreboard.sv|lte_error_ctrl.sv|lte_task_dispatch.sv|lte_boundary_ctrl.sv|lte_loop_nest_ctrl.sv|lte_task_context.sv|lte_tdt_decode.sv|lte_pkg.sv|
+R9
+!i113 0
+R10
+R11
+vlte_csr
+R1
+R2
+DXx4 work 15 lte_csr_sv_unit 0 22 `5RU8RMnFgP7dXC3j]g0;3
+R3
+r1
+!s85 0
+31
+!i10b 1
+!s100 17i9_Hdh]N4kkfkeK`5DG3
+IiXgC4AS7Pb<onmJa7<DV81
+!s105 lte_csr_sv_unit
+S1
+R0
+Z13 w1781892797
+Z14 8lte_csr.sv
+Z15 Flte_csr.sv
+L0 17
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_csr_sv_unit
+R1
+R2
+V`5RU8RMnFgP7dXC3j]g0;3
+r1
+!s85 0
+31
+!i10b 1
+!s100 4[oDk5kT[MPUK]6aoEZ^J2
+I`5RU8RMnFgP7dXC3j]g0;3
+!i103 1
+S1
+R0
+R13
+R14
+R15
+L0 15
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+vlte_error_ctrl
+R1
+R2
+DXx4 work 22 lte_error_ctrl_sv_unit 0 22 ;00iPdgYN`VRG=AnIT[8O1
+R3
+r1
+!s85 0
+31
+!i10b 1
+!s100 A@N@Uz?Dm26JWjZCY<iAZ3
+IBo5J9EfP9?OM4lQPDEOFm1
+!s105 lte_error_ctrl_sv_unit
+S1
+R0
+Z16 w1781955093
+Z17 8lte_error_ctrl.sv
+Z18 Flte_error_ctrl.sv
+Z19 L0 16
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_error_ctrl_sv_unit
+R1
+R2
+V;00iPdgYN`VRG=AnIT[8O1
+r1
+!s85 0
+31
+!i10b 1
+!s100 FhKR60LVz[EnHCCk9e?I^3
+I;00iPdgYN`VRG=AnIT[8O1
+!i103 1
+S1
+R0
+R16
+R17
+R18
+Z20 L0 14
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+vlte_legacy_mux
+R1
+!s110 1781960425
+!i10b 1
+!s100 3b]BJ_k_lACJIgj18FaXC1
+Im<:YG66`aUOO?d@E:;d]P0
+R3
+!s105 lte_legacy_mux_sv_unit
+S1
+R0
+w1781864088
+8lte_legacy_mux.sv
+Flte_legacy_mux.sv
+L0 27
+R7
+r1
+!s85 0
+31
+R8
+R12
+R9
+!i113 0
+R10
+R11
+vlte_loop_nest_ctrl
+R1
+R2
+DXx4 work 26 lte_loop_nest_ctrl_sv_unit 0 22 dXifkHfXB^F`1O8zgY^EY2
+R3
+r1
+!s85 0
+31
+!i10b 1
+!s100 lE^RlW;>igEMm8lFZm4M60
+Img_?@37?;2cO@a@?LcF^m1
+!s105 lte_loop_nest_ctrl_sv_unit
+S1
+R0
+Z21 w1781885548
+Z22 8lte_loop_nest_ctrl.sv
+Z23 Flte_loop_nest_ctrl.sv
+L0 25
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_loop_nest_ctrl_sv_unit
+R1
+R2
+VdXifkHfXB^F`1O8zgY^EY2
+r1
+!s85 0
+31
+!i10b 1
+!s100 N5mONoCZRo<Tz4:G43Cke1
+IdXifkHfXB^F`1O8zgY^EY2
+!i103 1
+S1
+R0
+R21
+R22
+R23
+L0 23
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_pkg
+R1
+!s110 1781960424
+!i10b 1
+!s100 3J?hBG]:a^JcF>8a91X3Q0
+IMdKFS@b7L7TXznTl?>]A=2
+VMdKFS@b7L7TXznTl?>]A=2
+S1
+R0
+w1781880642
+8lte_pkg.sv
+Flte_pkg.sv
+Z24 L0 18
+R7
+r1
+!s85 0
+31
+R8
+R12
+R9
+!i113 0
+R10
+R11
+vlte_task_context
+R1
+R2
+DXx4 work 24 lte_task_context_sv_unit 0 22 b<8c9JaJ@abf0:HA4_K@V0
+R3
+r1
+!s85 0
+31
+!i10b 1
+!s100 A]57JN5;<751g]S[8ZzI62
+Ikibo;A@EZKHR:z<2>anMS2
+!s105 lte_task_context_sv_unit
+S1
+R0
+Z25 w1781959997
+Z26 8lte_task_context.sv
+Z27 Flte_task_context.sv
+R24
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_task_context_sv_unit
+R1
+R2
+Vb<8c9JaJ@abf0:HA4_K@V0
+r1
+!s85 0
+31
+!i10b 1
+!s100 eA7_cQfT:D>k10SmFG=EY1
+Ib<8c9JaJ@abf0:HA4_K@V0
+!i103 1
+S1
+R0
+R25
+R26
+R27
+R19
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+vlte_task_ctrl_top
+R1
+R2
+DXx4 work 25 lte_task_ctrl_top_sv_unit 0 22 SH9:7;zBAz00FgECeL2720
+R3
+r1
+!s85 0
+31
+!i10b 1
+!s100 jc<zW?c6[GH`e9KFXe44z3
+ISMFaW_0_fK1jDKdmbYiP]2
+!s105 lte_task_ctrl_top_sv_unit
+S1
+R0
+Z28 w1781960409
+Z29 8lte_task_ctrl_top.sv
+Z30 Flte_task_ctrl_top.sv
+R19
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_task_ctrl_top_sv_unit
+R1
+R2
+VSH9:7;zBAz00FgECeL2720
+r1
+!s85 0
+31
+!i10b 1
+!s100 m?k5K^9@zX6F<3<__2nLN1
+ISH9:7;zBAz00FgECeL2720
+!i103 1
+S1
+R0
+R28
+R29
+R30
+R20
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+vlte_task_dispatch
+R1
+R2
+DXx4 work 25 lte_task_dispatch_sv_unit 0 22 =a1VmSBmGEo]XmzAl33Bf0
+R3
+r1
+!s85 0
+31
+!i10b 1
+!s100 ]QjlQ65JaNc6RHYaM5gCP2
+I:n34:Ck?ADDV:`]e1bObM3
+!s105 lte_task_dispatch_sv_unit
+S1
+R0
+Z31 w1781938315
+Z32 8lte_task_dispatch.sv
+Z33 Flte_task_dispatch.sv
+L0 20
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_task_dispatch_sv_unit
+R1
+R2
+V=a1VmSBmGEo]XmzAl33Bf0
+r1
+!s85 0
+31
+!i10b 1
+!s100 Ik?^F24_@VZ:PQBQ3FNbV2
+I=a1VmSBmGEo]XmzAl33Bf0
+!i103 1
+S1
+R0
+R31
+R32
+R33
+R24
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+vlte_task_scoreboard
+R1
+R2
+DXx4 work 27 lte_task_scoreboard_sv_unit 0 22 R_lGV19n9Wi19PeEOIDQH3
+R3
+r1
+!s85 0
+31
+!i10b 1
+!s100 NZLYBnGS5V9B]0aH4;8L63
+IImB_bUn>85Hhj8gFb[66j1
+!s105 lte_task_scoreboard_sv_unit
+S1
+R0
+Z34 w1781946415
+Z35 8lte_task_scoreboard.sv
+Z36 Flte_task_scoreboard.sv
+R19
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_task_scoreboard_sv_unit
+R1
+R2
+VR_lGV19n9Wi19PeEOIDQH3
+r1
+!s85 0
+31
+!i10b 1
+!s100 W9W?CG5zMkNYTnUADF]=N3
+IR_lGV19n9Wi19PeEOIDQH3
+!i103 1
+S1
+R0
+R34
+R35
+R36
+R20
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+vlte_tdt_decode
+R1
+R2
+DXx4 work 22 lte_tdt_decode_sv_unit 0 22 =LI_mJfM[7?NYBAEGZ70@1
+R3
+r1
+!s85 0
+31
+!i10b 1
+!s100 SQ:SghfdagG<7LH9ImgoS1
+IhN5HYMWe_3>dG?1A@zf6o2
+!s105 lte_tdt_decode_sv_unit
+S1
+R0
+Z37 w1781883061
+Z38 8lte_tdt_decode.sv
+Z39 Flte_tdt_decode.sv
+R24
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11
+Xlte_tdt_decode_sv_unit
+R1
+R2
+V=LI_mJfM[7?NYBAEGZ70@1
+r1
+!s85 0
+31
+!i10b 1
+!s100 kokebUd?XOf>>J16nDUJl0
+I=LI_mJfM[7?NYBAEGZ70@1
+!i103 1
+S1
+R0
+R37
+R38
+R39
+R19
+R7
+R8
+R12
+R9
+!i113 0
+R10
+R11

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/e/Modelsim/win64/vlib work *)",
+      "Bash(/e/Modelsim/win64/vlog -sv -quiet lte_pkg.sv lte_tdt_decode.sv lte_task_context.sv lte_loop_nest_ctrl.sv lte_boundary_ctrl.sv lte_task_dispatch.sv lte_error_ctrl.sv lte_task_scoreboard.sv lte_csr.sv lte_legacy_mux.sv lte_task_ctrl_top.sv)",
+      "Bash(/e/Modelsim/win64/vlog -sv lte_pkg.sv lte_tdt_decode.sv lte_task_context.sv lte_loop_nest_ctrl.sv lte_boundary_ctrl.sv lte_task_dispatch.sv lte_error_ctrl.sv lte_task_scoreboard.sv lte_csr.sv lte_legacy_mux.sv lte_task_ctrl_top.sv)"
+    ]
+  }
+}

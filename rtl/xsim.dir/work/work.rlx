@@ -1,0 +1,15 @@
+0.7
+2020.2
+May 22 2025
+00:13:55
+d:/Lorenzo/rtl/lte_boundary_ctrl.sv,1781960090,systemVerilog,,,,$unit_lte_boundary_ctrl_sv;lte_boundary_ctrl,,,,,,,,
+d:/Lorenzo/rtl/lte_csr.sv,1781892797,systemVerilog,,,,$unit_lte_csr_sv;lte_csr,,,,,,,,
+d:/Lorenzo/rtl/lte_error_ctrl.sv,1781955093,systemVerilog,,,,$unit_lte_error_ctrl_sv;lte_error_ctrl,,,,,,,,
+d:/Lorenzo/rtl/lte_legacy_mux.sv,1781864088,systemVerilog,,,,lte_legacy_mux,,,,,,,,
+d:/Lorenzo/rtl/lte_loop_nest_ctrl.sv,1781885548,systemVerilog,,,,$unit_lte_loop_nest_ctrl_sv;lte_loop_nest_ctrl,,,,,,,,
+d:/Lorenzo/rtl/lte_pkg.sv,1781880642,systemVerilog,d:/Lorenzo/rtl/lte_task_scoreboard.sv,,,lte_pkg,,,,,,,,
+d:/Lorenzo/rtl/lte_task_context.sv,1781959997,systemVerilog,,,,$unit_lte_task_context_sv;lte_task_context,,,,,,,,
+d:/Lorenzo/rtl/lte_task_ctrl_top.sv,1781885566,systemVerilog,,,,$unit_lte_task_ctrl_top_sv;lte_task_ctrl_top,,,,,,,,
+d:/Lorenzo/rtl/lte_task_dispatch.sv,1781938315,systemVerilog,,,,$unit_lte_task_dispatch_sv;lte_task_dispatch,,,,,,,,
+d:/Lorenzo/rtl/lte_task_scoreboard.sv,1781946415,systemVerilog,,,,$unit_lte_task_scoreboard_sv;lte_task_scoreboard,,,,,,,,
+d:/Lorenzo/rtl/lte_tdt_decode.sv,1781883061,systemVerilog,,,,$unit_lte_tdt_decode_sv;lte_tdt_decode,,,,,,,,
