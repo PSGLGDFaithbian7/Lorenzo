@@ -13,10 +13,17 @@
 ##############################################################################
 
 #----------------------------------------------------------------------
-# 工具路径 (按实际安装位置修改)
+# 工具路径
+# 兼容两种常见环境变量设置方式:
+#   a) VCS=vcs  (已在 PATH 中)
+#   b) VCS=/install/dir  ($VCS 指向安装目录, 真正的二进制在 bin/ 下)
 #----------------------------------------------------------------------
 VCS    ?= vcs
 VERDI  ?= verdi
+
+# 若 $VCS / $VERDI 是目录, 自动补全 bin/ 子路径
+VCS_BIN   := $(if $(wildcard $(VCS)/bin/vcs),$(VCS)/bin/vcs,$(VCS))
+VERDI_BIN := $(if $(wildcard $(VERDI)/bin/verdi),$(VERDI)/bin/verdi,$(VERDI))
 
 #----------------------------------------------------------------------
 # 目录
@@ -60,6 +67,7 @@ VCS_FLAGS := \
     -debug_access+all    \
     -kdb                 \
     +define+FSDB         \
+    +define+TB_TOP=$(TB) \
     -notice              \
     -l comp.log
 
@@ -94,7 +102,7 @@ all: comp sim
 #----------------------------------------------------------------------
 comp: $(RTL_FILES) $(TB_FILE) $(DUMP_FILE)
 	@echo "========== [COMP] TB=$(TB) =========="
-	$(VCS) $(VCS_FLAGS) \
+	$(VCS_BIN) $(VCS_FLAGS) \
 	    $(RTL_FILES) $(TB_FILE) $(DUMP_FILE) \
 	    -o $(SIMV)
 	@echo "========== [COMP DONE] =========="
@@ -120,7 +128,7 @@ wave:
 	    echo "[ERROR] $(FSDB) not found, run 'make sim' first"; exit 1; \
 	fi
 	@echo "========== [VERDI] opening $(FSDB) =========="
-	$(VERDI) $(VERDI_FLAGS) \
+	$(VERDI_BIN) $(VERDI_FLAGS) \
 	    -sv \
 	    $(RTL_FILES) $(TB_FILE) &
 

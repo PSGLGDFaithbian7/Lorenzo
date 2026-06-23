@@ -137,12 +137,14 @@ module tb_lte_task_ctrl_top;
 
   // 捕获 group_done 那一拍的 token last 字段 (辅助检查)
   logic snap_last_group, snap_last_ctx, snap_last_head;
+  logic [HEAD_W-1:0] snap_head_tile_id;
   logic [31:0] snap_lane_mask;
   always @(posedge clk) begin
     if (group_done_pulse) begin
       snap_last_group <= deq_token_meta.last_group;
       snap_last_ctx   <= deq_token_meta.last_ctx;
       snap_last_head  <= deq_token_meta.last_head;
+      snap_head_tile_id <= deq_token_meta.head_tile_id;
       snap_lane_mask  <= deq_token_meta.lane_valid_mask;
     end
   end
@@ -198,6 +200,7 @@ module tb_lte_task_ctrl_top;
     d[255:252] = 4'hD; d[251:248] = 4'h0; d[175:168] = 8'd32;
     d[247:240] = flags;
     d[239:224] = heads; d[223:208] = ctx; d[207:192] = dim;
+    d[159:152] = 8'd1;
     d[111:96]  = dgc;   d[95:80]   = cbc; d[79:48]   = tail;
     tdt_mem[id] = d;
   endtask
@@ -256,7 +259,8 @@ module tb_lte_task_ctrl_top;
   task automatic wait_task_done(input int timeout=5000);
     int to;
     to = 0;
-    while (!task_done_pulse && to < timeout) begin @(posedge clk); #1; to++; end
+    if (cnt_task_done != 0) return;
+    while (cnt_task_done == 0 && to < timeout) begin @(posedge clk); #1; to++; end
     if (to >= timeout) begin
       $display("[FAIL][%s] timeout waiting task_done_pulse", cur_tc); err_cnt++;
     end
@@ -436,7 +440,7 @@ module tb_lte_task_ctrl_top;
     for (int h=0; h<4; h++) begin
       run_group(32); clk_tick(1);
       // head_ctr should equal h at the time of this group
-      chk_i($sformatf("head_ctr_h%0d",h), head_ctr, h);
+      chk_i($sformatf("head_ctr_h%0d",h), snap_head_tile_id, h);
       run_drain(32); clk_tick(2);
     end
 
