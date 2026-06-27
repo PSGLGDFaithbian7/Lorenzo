@@ -500,26 +500,65 @@ module tb_lte_task_ctrl_top;
   endtask
 
   //--------------------------------------------------------------------------
-  // TC8: PV heads=3, hp=2 -> two head tiles, last tile has 1 head / 2 active SAs
+  // TC8: PV head_dim=64, heads=9, hp=2 -> five head tiles.
+  //      Full tiles use 2 heads * 2 SA/head = 4 SAs; last tile uses 1 head = 2 SAs.
   //--------------------------------------------------------------------------
   task automatic tc8_pv_partial_head_tile();
     cur_tc = "TC8_PV_PARTIAL_TILE";
     $display("--- %s ---", cur_tc);
-    set_pv(7, 3, 32, 64, 2, 2, 1, 32, 8'd1, 8'h00);
+    set_pv(7, 9, 32, 64, 2, 2, 1, 32, 8'd1, 8'h00);
     init_pe(7);
     reset_counters();
     do_start(7);
 
-    chk_i("act_sa_tile0", active_sa_count, 4);
+    for (int tile=0; tile<4; tile++) begin
+      chk_i($sformatf("act_sa_tile%0d", tile), active_sa_count, 4);
+      run_group(32); clk_tick(2);
+      chk_i($sformatf("head_ctr_tile%0d", tile), snap_head_tile_id, tile*2);
+      chk1($sformatf("tile%0d_not_last", tile), snap_last_head, 1'b0);
+      run_drain(32); clk_tick(2);
+    end
+
+    chk_i("act_sa_tile4", active_sa_count, 2);
     run_group(32); clk_tick(2);
-    chk_i("head_ctr_tile0", snap_head_tile_id, 0);
-    chk1("tile0_not_last", snap_last_head, 1'b0);
+    chk_i("head_ctr_tile4", snap_head_tile_id, 8);
+    chk1("tile4_last", snap_last_head, 1'b1);
     run_drain(32); clk_tick(2);
 
-    chk_i("act_sa_tile1", active_sa_count, 2);
+    wait_task_done();
+    engine_task_done=1; clk_tick(1); engine_task_done=0;
+    clk_tick(3);
+
+    chk_i("group_cnt", cnt_group_done, 5);
+    chk_i("head_cnt",  cnt_head_done,  5);
+    chk_i("task_done", cnt_task_done,  1);
+    chk_i("no_rowdone", cnt_row_done,  0);
+    chk1("idle",       engine_busy,    1'b0);
+    $display("[PASS] TC8");
+  endtask
+
+  //--------------------------------------------------------------------------
+  // TC9: PV head_dim=128, heads=2, hp=1 -> no head parallelism.
+  //      Each head consumes all 4 SAs; head_ctr steps by 1.
+  //--------------------------------------------------------------------------
+  task automatic tc9_pv_128_serial_heads();
+    cur_tc = "TC9_PV128_SERIAL";
+    $display("--- %s ---", cur_tc);
+    set_pv(8, 2, 32, 128, 4, 1, 1, 32, 8'd1, 8'h00);
+    init_pe(8);
+    reset_counters();
+    do_start(8);
+
+    chk_i("act_sa_head0", active_sa_count, 4);
     run_group(32); clk_tick(2);
-    chk_i("head_ctr_tile1", snap_head_tile_id, 2);
-    chk1("tile1_last", snap_last_head, 1'b1);
+    chk_i("head_ctr_head0", snap_head_tile_id, 0);
+    chk1("head0_not_last", snap_last_head, 1'b0);
+    run_drain(32); clk_tick(2);
+
+    chk_i("act_sa_head1", active_sa_count, 4);
+    run_group(32); clk_tick(2);
+    chk_i("head_ctr_head1", snap_head_tile_id, 1);
+    chk1("head1_last", snap_last_head, 1'b1);
     run_drain(32); clk_tick(2);
 
     wait_task_done();
@@ -531,7 +570,7 @@ module tb_lte_task_ctrl_top;
     chk_i("task_done", cnt_task_done,  1);
     chk_i("no_rowdone", cnt_row_done,  0);
     chk1("idle",       engine_busy,    1'b0);
-    $display("[PASS] TC8");
+    $display("[PASS] TC9");
   endtask
 
   //--------------------------------------------------------------------------
@@ -551,6 +590,7 @@ module tb_lte_task_ctrl_top;
     tc6_qk_multihead();
     tc7_qk_partial_head_tile();
     tc8_pv_partial_head_tile();
+    tc9_pv_128_serial_heads();
 
     clk_tick(5);
     if (err_cnt == 0)

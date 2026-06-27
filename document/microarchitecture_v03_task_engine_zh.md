@@ -95,7 +95,8 @@ V0.2 legacy datapath 可以复用大部分算术模块。新增的是 task-level
   `acc_next = acc_prev + product(raw, factor_fp8)`，不再是纯 `acc += raw`。
   架构上对应两个乘加单元域：`input_mulacc` 挂在 shared input ACC 前，
   `output_mulacc` 挂在 drain/output ACC 前。物理 RTL 不按 32 个 PE lane 复制：
-  QK input 侧每个 active SA 1 个 input mulacc，PV input 侧启用 `Hp_parallel * SA_per_head` 个 input mulacc；
+  QK input 侧每个 active SA 1 个 input mulacc，PV input 侧按 active head 数启用 input mulacc，
+  每个 P/P_ACC scalar 再广播到该 head 占用的 `SA_per_head` 个 SA；
   output 侧固定每个 active SA 1 个 output mulacc，并沿 `drain_lane_ctr=0..31` 分时复用。
 
 锁存后 active task 不再读取 host 可写 descriptor，避免运行时修改造成不确定性。
@@ -251,15 +252,17 @@ Task mode 下格式硬固定：
 |------|------|------|
 | `qp_in` | `HP_MAX x FP8` | QK 时为 Q，PV 时为 P |
 | `kv_in` | 1 个固定 KV beat | QK 时为 K lanes，PV 时为 V lanes |
-| `input_factor_in` | `HP_MAX x FP8` | 与 `qp_in` 同拍对齐；有效 lane = 当前 head tile 的 `active_sa_count` |
+| `input_factor_in` | `HP_MAX x FP8` | 与 `qp_in` 同拍对齐；QK 有效 lane = `active_sa_count`，PV 有效 lane = 当前 head tile 的 head 数 |
 | `deq_in` | `{w0_fp16,w1_fp16}` | 每个逻辑 group 1 组参数 |
 | `output_factor_in` | `NUM_SA x FP8` | 与 drain 顺序同拍对齐；供 output_acc 使用 |
 | `out_if` | FP16 stream | QK 时为 A/softmax input，PV 时为 O |
 
 所有端口都走 ready/valid。engine 不生成地址，只消费“当前该消费的第几个 token”。
 
-其中 `active_sa_count` 表示当前 head tile 实际启用的 SA 数（1..4）。QK/PV 的 QP/input_factor
-每拍各送 `active_sa_count` 个标量。
+其中 `active_sa_count` 表示当前 head tile 实际启用的 SA 数（1..4）。QK 中每个 active SA
+对应一个 Q/input_factor 标量；PV 中 QP/input_factor 的 lane 数是当前 tile 的 head 数，full tile
+为 `Hp_parallel`，最后 partial tile 为 `last_head_count`，而 SA 阵列启用数为
+`active_head_count * pv_sa_per_head`。
 
 ### 3.2.1 FP8 factor 供数时序
 
@@ -368,8 +371,10 @@ input_acc_next = input_acc_prev + cast_fp16(input_acc_term)
 - `qp_fire` 必须同时满足 `qp_valid && input_factor_valid && qp_ready && input_factor_ready`
 - QK 资源：每个 active SA 1 个 input mulacc。一个 `1x32` SA 每拍只接收一个 scalar，
   因此该 mulacc 随 SA 的 scalar 输入逐拍工作，不按 32 个 PE lane 复制。
-- PV 资源：启用 `Hp_parallel * SA_per_head` 个 input mulacc，按 SA 粒度维护 P_ACC。
-  当最后一批 head 不满时，运行态 `active_sa_count = last_head_count * SA_per_head`。
+- PV 资源：input mulacc 按 head 粒度维护 P_ACC，full tile 为 `Hp_parallel` 路，最后 partial tile
+  为 `last_head_count` 路；每个 head 的 P/P_ACC scalar 再广播给该 head 占用的
+  `SA_per_head` 个 SA。当最后一批 head 不满时，SA 阵列运行态
+  `active_sa_count = last_head_count * SA_per_head`。
 
 ### 3.6 Q line buffer 改造
 

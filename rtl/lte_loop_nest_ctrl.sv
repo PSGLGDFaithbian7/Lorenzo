@@ -187,6 +187,9 @@ module lte_loop_nest_ctrl #(
   // QK 最后一个 context block 的 lane 不一定全有效, 用 tail mask
   assign current_lane_valid_mask =
       (qk_mode && context_last_q) ? qk_context_tail_mask : {DRAIN_LANE_NUM{1'b1}};
+  // QK consumes one SA per active head. PV consumes sa_per_head SAs per head
+  // because the parallel dimension is head_dim; e.g. head_dim=64 uses two SAs
+  // per head and two heads per full tile.
   assign last_active_sa_count = qk_mode ? 8'(last_head_count) :
                                           (8'(last_head_count) * 8'(sa_per_head));
   assign last_active_sa_count_narrow = last_active_sa_count[$clog2(PARALLEL_MAX+1)-1:0];
@@ -251,7 +254,8 @@ module lte_loop_nest_ctrl #(
       context_ctr_q <= context_last_q ? '0 : context_ctr_q + 1'b1;
   end
 
-  // head 计数器, 考虑 PV 多头并行步长 hp_parallel
+  // head counter steps by the number of heads in a full tile.
+  // PV hp_parallel is derived from head_dim: 128/head_dim = 4/sa_per_head.
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n)              head_ctr_q <= '0;
     else if (task_start)     head_ctr_q <= '0;

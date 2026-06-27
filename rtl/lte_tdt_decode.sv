@@ -120,14 +120,19 @@ module lte_tdt_decode (
 
   // PV mapping 检查 (一次性小乘法, 非热路径):
   //   head_dim>=32, head_dim%32==0, hp_parallel*head_dim==128, sa_per_head*32==head_dim
-  logic [15:0] hp_x_headdim;   // hp_parallel * head_dim
+  //   sa_per_head/head_dim describe dim parallelism: one head can occupy 1/2/4 SAs.
+  logic [23:0] hp_x_headdim;   // hp_parallel * head_dim
   logic [15:0] saph_x_32;      // sa_per_head * 32
-  assign hp_x_headdim = hp_parallel_o[7:0] * head_dim_o[7:0];
-  assign saph_x_32    = {sa_per_head_o, 5'd0};         // *32 = 左移 5
+  logic        sa_per_head_ok;
+  assign hp_x_headdim   = hp_parallel_o * head_dim_o;
+  assign saph_x_32      = {sa_per_head_o, 5'd0};         // *32 = 左移 5
+  assign sa_per_head_ok = (sa_per_head_o >= 8'd1) &&
+                          (sa_per_head_o <= 8'(PARALLEL_MAX));
   logic pv_map_ok;
   assign pv_map_ok = (head_dim_o >= 16'd32)        &&
                      (head_dim_o[4:0] == 5'd0)     &&
-                     (hp_x_headdim == 16'd128)     &&
+                     sa_per_head_ok                &&
+                     (hp_x_headdim == 24'd128)     &&
                      (saph_x_32[15:0] == head_dim_o);
 
   //----------------------------------------------------------------------------

@@ -19,5 +19,9 @@ INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_legacy_mux
 INFO: [VRFC 10-311] analyzing module lte_legacy_mux
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_task_ctrl_top.sv" into library work
 INFO: [VRFC 10-311] analyzing module lte_task_ctrl_top
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/tb/tb_lte_tdt_decode.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_lte_tdt_decode
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/tb/tb_lte_loop_nest_ctrl.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_lte_loop_nest_ctrl
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/tb/tb_lte_task_ctrl_top.sv" into library work
 INFO: [VRFC 10-311] analyzing module tb_lte_task_ctrl_top

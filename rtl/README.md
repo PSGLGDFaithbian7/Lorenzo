@@ -176,7 +176,12 @@ PV, head_dim=64, context_length=33, num_heads=4:
   task_mode=1, head_dim=64, SA_per_head=2, Hp_parallel=2, context_length=33,
   pv_context_group_count=2        ; ceil(33/32)
   pv_last_inner_count=1           ; 33 = 32 + 1 → 最后一组只 1 个 inner
+  last_head_count=2               ; 4 heads 恰好两批，每批 2 heads，占满 4 个 SA
   flags: [0]=1(P_ACC) [5]=1(写 O)
+
+PV, head_dim=64, context_length=32, num_heads=9:
+  SA_per_head=2, Hp_parallel=2, last_head_count=1
+  前 4 批各 2 heads 并行，占用 4 个 SA；最后 1 个 head 只占用 2 个 SA
 ```
 
 ## 7. 待集成 / 联调注意

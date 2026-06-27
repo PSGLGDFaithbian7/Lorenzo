@@ -169,11 +169,11 @@ module tb_lte_loop_nest_ctrl;
   // TC3: PV — pv_ctx_gc=2, pv_last_inner=16, heads=1, hp=1
   //============================================================
   task tc3_pv_basic();
-    $display("--- TC3: PV pv_last_inner=16 ---");
+    $display("--- TC3: PV128 pv_last_inner=16 ---");
     task_mode              = TASK_MODE_PV;
     num_heads              = 1;
     hp_parallel            = 1;
-    full_active_sa_count   = 1;
+    full_active_sa_count   = 4;
     sa_per_head            = 4;
     last_head_count        = 1;
     pv_context_group_count = 2;
@@ -182,6 +182,7 @@ module tb_lte_loop_nest_ctrl;
     qk_context_block_count = 1;
     qk_context_tail_mask   = 32'hFFFF_FFFF;
     start_task();
+    chk_i("tc3_active_sa", active_sa_count_o, 4);
 
     // group 0 (full 32 inner)
     run_group_full(32);
@@ -201,7 +202,7 @@ module tb_lte_loop_nest_ctrl;
     chk1("tc3_g1_last_grp",  snap_last_group, 1'b1);
     chk1("tc3_g1_last_head", snap_last_head,  1'b1);
     clk_tick(1);
-    $display("[PASS] TC3: PV pv_last_inner=16");
+    $display("[PASS] TC3: PV128 pv_last_inner=16");
   endtask
 
   //============================================================
@@ -266,6 +267,41 @@ module tb_lte_loop_nest_ctrl;
   endtask
 
   //============================================================
+  // TC6: PV head_dim=64, heads=9, hp=2.
+  //      Full tiles use 4 SAs; last tile has one head and uses 2 SAs.
+  //============================================================
+  task tc6_pv64_partial_head_tile();
+    $display("--- TC6: PV64 heads=9 partial head tile ---");
+    task_mode              = TASK_MODE_PV;
+    num_heads              = 9;
+    hp_parallel            = 2;
+    full_active_sa_count   = 4;
+    sa_per_head            = 2;
+    last_head_count        = 1;
+    pv_context_group_count = 1;
+    pv_last_inner_count    = 32;
+    qk_dim_group_count     = 1;
+    qk_context_block_count = 1;
+    qk_context_tail_mask   = 32'hFFFF_FFFF;
+    start_task();
+
+    for (int tile=0; tile<4; tile++) begin
+      chk_i($sformatf("tc6_active_sa_tile%0d", tile), active_sa_count_o, 4);
+      run_group_full(32);
+      chk_i($sformatf("tc6_head_ctr_tile%0d", tile), head_ctr_o, (tile + 1) * 2);
+      chk1($sformatf("tc6_tile%0d_not_last", tile), snap_last_head, 1'b0);
+      clk_tick(1);
+    end
+
+    chk_i("tc6_active_sa_last_tile", active_sa_count_o, 2);
+    run_group_full(32);
+    chk_i("tc6_head_ctr_done", head_ctr_o, 0);
+    chk1("tc6_last_tile", snap_last_head, 1'b1);
+    clk_tick(1);
+    $display("[PASS] TC6: PV64 partial head tile");
+  endtask
+
+  //============================================================
   initial begin
     @(posedge clk); #1; rst_n=1; clk_tick(2);
     tc1_qk_basic();
@@ -273,6 +309,7 @@ module tb_lte_loop_nest_ctrl;
     tc3_pv_basic();
     tc4_backpressure();
     tc5_drain_ctr();
+    tc6_pv64_partial_head_tile();
 
     if (err_cnt==0) $display("\n[RESULT] tb_lte_loop_nest_ctrl: ALL PASS (%0d checks)", 1);
     else            $display("\n[RESULT] tb_lte_loop_nest_ctrl: FAIL (%0d errors)", err_cnt);

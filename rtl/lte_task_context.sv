@@ -73,8 +73,11 @@ module lte_task_context (
     end
   endgenerate
 
-  // Full head tile active SA count. The runtime value for the final head tile is
-  // selected later in lte_loop_nest_ctrl using last_head_count.
+  // Full head tile active SA count.
+  // QK: one SA per parallel head.
+  // PV: sa_per_head = head_dim/32 and hp_parallel = 4/sa_per_head, so a full
+  //     head tile occupies all 4 SAs. The final partial tile is selected later
+  //     in lte_loop_nest_ctrl using last_head_count * sa_per_head.
   logic [7:0] full_active_sa_count_c;
   always_comb begin
     if (task_mode_i == TASK_MODE_PV)

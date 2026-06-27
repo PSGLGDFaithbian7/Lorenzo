@@ -114,6 +114,9 @@ module tb_lte_tdt_decode;
     tdt = make_pv(2, 64, 128, 4, 1, 2, 6'd32, 1);
     chk("LEGAL_PV128", 1'b1, ERR_NONE);
 
+    tdt = make_pv(9, 32, 64, 2, 2, 1, 6'd32, 1);
+    chk("LEGAL_PV64_9H_LAST1", 1'b1, ERR_NONE);
+
     tdt = make_pv(2, 33, 64, 2, 2, 2, 6'd1, 2);
     chk("LEGAL_PV64", 1'b1, ERR_NONE);
 
@@ -144,14 +147,17 @@ module tb_lte_tdt_decode;
     tdt = make_qk(128, 64, 2, 32'h0, 4, 2, 4, 2);
     chk("ERR_TAIL_ZERO", 1'b0, ERR_ILLEGAL_CONTEXT);
 
-    tdt = make_pv(2, 64, 128, 4, 1, 2, 6'd0, 4);
+    tdt = make_pv(2, 64, 128, 4, 1, 2, 6'd0, 1);
     chk("ERR_PV_LI_ZERO", 1'b0, ERR_ILLEGAL_CONTEXT);
 
-    tdt = make_pv(2, 64, 128, 4, 1, 2, 6'd33, 4);
+    tdt = make_pv(2, 64, 128, 4, 1, 2, 6'd33, 1);
     chk("ERR_PV_LI_OOB", 1'b0, ERR_ILLEGAL_CONTEXT);
 
     tdt = make_pv(2, 64, 64, 2, 3, 2, 6'd32, 2);
     chk("ERR_PV_MAP", 1'b0, ERR_ILLEGAL_PV_MAP);
+
+    tdt = make_pv(1, 64, 384, 12, 1, 2, 6'd32, 1);
+    chk("ERR_PV_MAP_HDIM_GT128", 1'b0, ERR_ILLEGAL_PV_MAP);
 
     tdt = make_qk(128, 64, 2, 32'hFFFF_FFFF, 4, 2, 4, 2);
     tdt[127:120] = 8'h01;
