@@ -29,6 +29,9 @@ module tb_lte_loop_nest_ctrl;
   logic [$clog2(PV_CONTEXT_GROUP_NUM_MAX+1)-1:0] pv_context_group_count=0;
   logic [$clog2(GROUP_SIZE_MAX+1)-1:0]           pv_last_inner_count=0;
   logic [$clog2(PARALLEL_MAX+1)-1:0]             hp_parallel=0;
+  logic [$clog2(PARALLEL_MAX+1)-1:0]             sa_per_head=1;
+  logic [$clog2(PARALLEL_MAX+1)-1:0]             full_active_sa_count=0;
+  logic [$clog2(PARALLEL_MAX+1)-1:0]             last_head_count=0;
   logic mac_fire=0, group_done_accept=0, drain_fire=0;
 
   logic [$clog2(HEAD_NUM_MAX)-1:0]             head_ctr_o;
@@ -36,14 +39,27 @@ module tb_lte_loop_nest_ctrl;
   logic [$clog2(PV_CONTEXT_GROUP_NUM_MAX)-1:0] group_ctr_o;
   logic [$clog2(GROUP_SIZE_MAX)-1:0]           inner_ctr_o;
   logic [$clog2(DRAIN_LANE_NUM)-1:0]           drain_lane_ctr_o;
+  logic [$clog2(PARALLEL_MAX+1)-1:0]           active_sa_count_o;
   logic is_inner_last, is_group_last, is_context_block_last, is_head_tile_last, is_task_last;
   logic group_done_valid, group_done_last_group, group_done_last_ctx, group_done_last_head;
   logic [DRAIN_LANE_NUM-1:0] group_done_lane_valid_mask;
   logic group_done_fire_o, qk_block_done_fire_o, head_step_fire_o, task_done_fire_o;
+  logic snap_group_done_fire, snap_last_group, snap_last_ctx, snap_last_head;
+  logic [DRAIN_LANE_NUM-1:0] snap_lane_valid_mask;
 
   lte_loop_nest_ctrl dut (.*);
 
   int err_cnt=0;
+
+  always @(posedge clk) begin
+    snap_group_done_fire <= group_done_fire_o;
+    if (group_done_fire_o) begin
+      snap_last_group      <= group_done_last_group;
+      snap_last_ctx        <= group_done_last_ctx;
+      snap_last_head       <= group_done_last_head;
+      snap_lane_valid_mask <= group_done_lane_valid_mask;
+    end
+  end
 
   // ---- 通用检查 ----
   task automatic chk_i(input string nm, input int got, exp);
@@ -87,6 +103,9 @@ module tb_lte_loop_nest_ctrl;
     qk_context_block_count = 2;
     qk_context_tail_mask   = 32'hFFFF_FFFF;
     hp_parallel            = 1;
+    full_active_sa_count   = 1;
+    sa_per_head            = 1;
+    last_head_count        = 1;
     pv_context_group_count = 1;  // not used in QK
     pv_last_inner_count    = 32;
     start_task();
@@ -98,14 +117,13 @@ module tb_lte_loop_nest_ctrl;
       for (int cb=0; cb<2; cb++) begin
         for (int g=0; g<2; g++) begin
           run_group_full(32);
-          clk_tick(1); // let context/head counters update
-          // After each group_done, check flags
           chk1($sformatf("tc1_last_grp h%0d cb%0d g%0d", h, cb, g),
-               group_done_last_group, (g==1));
+               snap_last_group, (g==1));
           chk1($sformatf("tc1_last_ctx h%0d cb%0d g%0d", h, cb, g),
-               group_done_last_ctx,   (cb==1));
+               snap_last_ctx,   (cb==1));
           chk1($sformatf("tc1_last_head h%0d cb%0d g%0d", h, cb, g),
-               group_done_last_head,  (h==1));
+               snap_last_head,  (h==1));
+          clk_tick(1); // let context/head counters update
           group_cnt++;
         end
       end
@@ -126,19 +144,24 @@ module tb_lte_loop_nest_ctrl;
     qk_context_block_count = 2;
     qk_context_tail_mask   = 32'h0000_0001;  // ctx=33 → last block 1 lane
     hp_parallel            = 1;
+    full_active_sa_count   = 1;
+    sa_per_head            = 1;
+    last_head_count        = 1;
     pv_last_inner_count    = 32;
     start_task();
 
     // block 0 (full): 1 group of 32 beats
-    run_group_full(32); clk_tick(1);
-    chk32("tc2_block0_mask", group_done_lane_valid_mask, 32'hFFFF_FFFF);
-    chk1("tc2_block0_last_ctx", group_done_last_ctx, 1'b0);
+    run_group_full(32);
+    chk32("tc2_block0_mask", snap_lane_valid_mask, 32'hFFFF_FFFF);
+    chk1("tc2_block0_last_ctx", snap_last_ctx, 1'b0);
+    clk_tick(1);
 
     // block 1 (tail): 1 group of 32 beats, but mask = tail
-    run_group_full(32); clk_tick(1);
-    chk32("tc2_block1_mask", group_done_lane_valid_mask, 32'h0000_0001);
-    chk1("tc2_block1_last_ctx",  group_done_last_ctx,  1'b1);
-    chk1("tc2_block1_last_head", group_done_last_head, 1'b1);
+    run_group_full(32);
+    chk32("tc2_block1_mask", snap_lane_valid_mask, 32'h0000_0001);
+    chk1("tc2_block1_last_ctx",  snap_last_ctx,  1'b1);
+    chk1("tc2_block1_last_head", snap_last_head, 1'b1);
+    clk_tick(1);
     $display("[PASS] TC2: QK tail mask");
   endtask
 
@@ -150,6 +173,9 @@ module tb_lte_loop_nest_ctrl;
     task_mode              = TASK_MODE_PV;
     num_heads              = 1;
     hp_parallel            = 1;
+    full_active_sa_count   = 1;
+    sa_per_head            = 4;
+    last_head_count        = 1;
     pv_context_group_count = 2;
     pv_last_inner_count    = 16;   // last group: only 16 inner beats
     qk_dim_group_count     = 1;
@@ -158,19 +184,22 @@ module tb_lte_loop_nest_ctrl;
     start_task();
 
     // group 0 (full 32 inner)
-    run_group_full(32); clk_tick(1);
-    chk1("tc3_g0_last_grp",  group_done_last_group, 1'b0);
+    run_group_full(32);
+    chk1("tc3_g0_last_grp",  snap_last_group, 1'b0);
     chk1("tc3_g0_inner_val", inner_ctr_o, 1'b0); // reset to 0
+    clk_tick(1);
 
     // group 1 (last, short 16 inner) — inner_last fires at i=15
-    for (int i=0; i<15; i++) begin
+    for (int i=0; i<14; i++) begin
       mac_fire=1; group_done_accept=0; clk_tick(1); mac_fire=0;
       chk1($sformatf("tc3_g1_not_last i=%0d",i), is_inner_last, 1'b0);
     end
+    mac_fire=1; group_done_accept=0; clk_tick(1); mac_fire=0;
+    chk1("tc3_g1_last_ready", is_inner_last, 1'b1);
     // beat 15: is_inner_last should be high (pv_last_inner-1=15), fire with accept
     mac_fire=1; group_done_accept=1; clk_tick(1); mac_fire=0; group_done_accept=0;
-    chk1("tc3_g1_last_grp",  group_done_last_group, 1'b1);
-    chk1("tc3_g1_last_head", group_done_last_head,  1'b1);
+    chk1("tc3_g1_last_grp",  snap_last_group, 1'b1);
+    chk1("tc3_g1_last_head", snap_last_head,  1'b1);
     clk_tick(1);
     $display("[PASS] TC3: PV pv_last_inner=16");
   endtask
@@ -186,6 +215,9 @@ module tb_lte_loop_nest_ctrl;
     qk_context_block_count = 1;
     qk_context_tail_mask   = 32'hFFFF_FFFF;
     hp_parallel            = 1;
+    full_active_sa_count   = 1;
+    sa_per_head            = 1;
+    last_head_count        = 1;
     pv_last_inner_count    = 32;
     start_task();
 
@@ -203,7 +235,7 @@ module tb_lte_loop_nest_ctrl;
 
     // now fire with accept=1 → should proceed
     mac_fire=1; group_done_accept=1; clk_tick(1); mac_fire=0; group_done_accept=0;
-    chk1("tc4_released_gd", group_done_valid, 1'b1);
+    chk1("tc4_released_gd", snap_group_done_fire, 1'b1);
     clk_tick(1);
     $display("[PASS] TC4: backpressure");
   endtask
@@ -219,6 +251,9 @@ module tb_lte_loop_nest_ctrl;
     qk_context_block_count = 1;
     qk_context_tail_mask   = 32'hFFFF_FFFF;
     hp_parallel            = 1;
+    full_active_sa_count   = 1;
+    sa_per_head            = 1;
+    last_head_count        = 1;
     pv_last_inner_count    = 32;
     start_task();
 

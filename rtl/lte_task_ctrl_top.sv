@@ -124,6 +124,7 @@ module lte_task_ctrl_top (
   logic [31:0] dec_qk_context_tail_mask;
   logic [15:0] dec_pv_context_group_count;
   logic [5:0]  dec_pv_last_inner_count;
+  logic [7:0]  dec_last_head_count;
   logic [3:0]  dec_desc_type;
   logic        cfg_legal;
   logic [7:0]  cfg_error_code;
@@ -150,6 +151,7 @@ module lte_task_ctrl_top (
     .qk_context_tail_mask_o   (dec_qk_context_tail_mask),
     .pv_context_group_count_o (dec_pv_context_group_count),
     .pv_last_inner_count_o    (dec_pv_last_inner_count),
+    .last_head_count_o        (dec_last_head_count),
     .cfg_legal_o              (cfg_legal),
     .cfg_error_code_o         (cfg_error_code)
   );
@@ -220,6 +222,7 @@ module lte_task_ctrl_top (
     .qk_context_tail_mask_i   (dec_qk_context_tail_mask),
     .pv_context_group_count_i (dec_pv_context_group_count),
     .pv_last_inner_count_i    (dec_pv_last_inner_count),
+    .last_head_count_i        (dec_last_head_count),
     .pe_desc_rdata            (pe_desc_rdata),
     .task_ctx_o               (ctx),
     .valid_len_o              (valid_len),
@@ -231,7 +234,6 @@ module lte_task_ctrl_top (
 
   assign task_ctx        = ctx;
   assign task_mode       = ctx.task_mode;
-  assign active_sa_count = ctx.active_sa_count;
 
   //----------------------------------------------------------------------------
   // B3: 循环嵌套控制器
@@ -247,6 +249,9 @@ module lte_task_ctrl_top (
   logic gd_valid, gd_last_group, gd_last_ctx, gd_last_head;
   logic [DRAIN_LANE_NUM-1:0] gd_lane_mask;
   logic ln_group_done_fire, ln_qk_block_done_fire, ln_head_step_fire, ln_task_done_fire;
+  logic [LN_HP_W-1:0] ln_active_sa_count;
+
+  assign active_sa_count = 8'(ln_active_sa_count);
 
   lte_loop_nest_ctrl u_loop_nest (
     .clk                        (clk),
@@ -260,6 +265,9 @@ module lte_task_ctrl_top (
     .pv_context_group_count     (ctx.pv_context_group_count[LN_PVGRP_W-1:0]),
     .pv_last_inner_count        (ctx.pv_last_inner_count[LN_INNER_W-1:0]),
     .hp_parallel                (ctx.hp_parallel[LN_HP_W-1:0]),
+    .sa_per_head                (ctx.sa_per_head[LN_HP_W-1:0]),
+    .full_active_sa_count       (ctx.active_sa_count[LN_HP_W-1:0]),
+    .last_head_count            (ctx.last_head_count[LN_HP_W-1:0]),
     .mac_fire                   (mac_fire),
     .group_done_accept          (group_done_accept),
     .drain_fire                 (drain_fire),
@@ -268,6 +276,7 @@ module lte_task_ctrl_top (
     .group_ctr_o                (group_ctr),
     .inner_ctr_o                (inner_ctr),
     .drain_lane_ctr_o           (drain_lane_ctr),
+    .active_sa_count_o          (ln_active_sa_count),
     .is_inner_last              (/* status */),
     .is_group_last              (/* status */),
     .is_context_block_last      (/* status */),

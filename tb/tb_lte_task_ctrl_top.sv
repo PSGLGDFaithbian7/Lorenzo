@@ -193,6 +193,8 @@ module tb_lte_task_ctrl_top;
     input logic [15:0] heads, ctx, dim,
     input logic [31:0] tail,
     input logic [15:0] dgc, cbc,
+    input logic [7:0]  hp,
+    input logic [7:0]  last_heads,
     input logic [7:0]  flags
   );
     logic [255:0] d;
@@ -200,8 +202,9 @@ module tb_lte_task_ctrl_top;
     d[255:252] = 4'hD; d[251:248] = 4'h0; d[175:168] = 8'd32;
     d[247:240] = flags;
     d[239:224] = heads; d[223:208] = ctx; d[207:192] = dim;
-    d[159:152] = 8'd1;
+    d[159:152] = hp;
     d[111:96]  = dgc;   d[95:80]   = cbc; d[79:48]   = tail;
+    d[25:18]   = last_heads;
     tdt_mem[id] = d;
   endtask
 
@@ -211,6 +214,7 @@ module tb_lte_task_ctrl_top;
     input logic [7:0]  saph, hp,
     input logic [15:0] pgc,
     input logic [5:0]  pli,
+    input logic [7:0]  last_heads,
     input logic [7:0]  flags
   );
     logic [255:0] d;
@@ -220,6 +224,7 @@ module tb_lte_task_ctrl_top;
     d[239:224] = heads;  d[223:208] = ctx;  d[191:176] = hdim;
     d[167:160] = saph;   d[159:152] = hp;
     d[47:32]   = pgc;    d[31:26]   = pli;
+    d[25:18]   = last_heads;
     tdt_mem[id] = d;
   endtask
 
@@ -256,13 +261,15 @@ module tb_lte_task_ctrl_top;
   endtask
 
   // 等待 task_done_pulse, 超时报错
+
   task automatic wait_task_done(input int timeout=5000);
     int to;
     to = 0;
-    if (cnt_task_done != 0) return;
-    while (cnt_task_done == 0 && to < timeout) begin @(posedge clk); #1; to++; end
-    if (to >= timeout) begin
-      $display("[FAIL][%s] timeout waiting task_done_pulse", cur_tc); err_cnt++;
+    if (cnt_task_done == 0) begin
+      while (cnt_task_done == 0 && to < timeout) begin @(posedge clk); #1; to++; end
+      if (to >= timeout) begin
+        $display("[FAIL][%s] timeout waiting task_done_pulse", cur_tc); err_cnt++;
+      end
     end
   endtask
 
@@ -272,13 +279,13 @@ module tb_lte_task_ctrl_top;
   task automatic tc1_qk_basic();
     cur_tc = "TC1_QK_BASIC";
     $display("--- %s ---", cur_tc);
-    set_qk(0, 1, 64, 64, 32'hFFFF_FFFF, 2, 2, 8'h01);
+    set_qk(0, 1, 64, 64, 32'hFFFF_FFFF, 2, 2, 8'd4, 8'd1, 8'h01);
     init_pe(0);
     reset_counters();
     do_start(0);
 
     chk1("mode_qk",  task_mode_o==TASK_MODE_QK, 1'b1);
-    chk_i("act_sa",  active_sa_count, 4);
+    chk_i("act_sa",  active_sa_count, 1);
 
     // 1 head * 2 cbs * 2 groups = 4 groups, 2 row_dones, 1 head_tile_done
     for (int cb=0; cb<2; cb++) begin
@@ -313,7 +320,7 @@ module tb_lte_task_ctrl_top;
   task automatic tc2_qk_tail();
     cur_tc = "TC2_QK_TAIL";
     $display("--- %s ---", cur_tc);
-    set_qk(1, 1, 33, 32, 32'h0000_0001, 1, 2, 8'h01);
+    set_qk(1, 1, 33, 32, 32'h0000_0001, 1, 2, 8'd4, 8'd1, 8'h01);
     init_pe(1);
     reset_counters();
     do_start(1);
@@ -347,12 +354,13 @@ module tb_lte_task_ctrl_top;
   task automatic tc3_pv_basic();
     cur_tc = "TC3_PV_BASIC";
     $display("--- %s ---", cur_tc);
-    set_pv(2, 1, 64, 128, 4, 1, 2, 32, 8'h00);
+    set_pv(2, 1, 64, 128, 4, 1, 2, 32, 8'd1, 8'h00);
     init_pe(2);
     reset_counters();
     do_start(2);
 
     chk1("mode_pv",  task_mode_o==TASK_MODE_PV, 1'b1);
+    chk_i("act_sa",  active_sa_count, 4);
 
     // 1 head tile, 2 groups of 32
     run_group(32); clk_tick(2);
@@ -382,10 +390,11 @@ module tb_lte_task_ctrl_top;
   task automatic tc4_pv_tail();
     cur_tc = "TC4_PV_TAIL";
     $display("--- %s ---", cur_tc);
-    set_pv(3, 2, 33, 64, 2, 2, 2, 1, 8'h01);
+    set_pv(3, 2, 33, 64, 2, 2, 2, 1, 8'd2, 8'h01);
     init_pe(3);
     reset_counters();
     do_start(3);
+    chk_i("act_sa", active_sa_count, 4);
 
     // group 0: full 32 inner
     run_group(32); clk_tick(2);
@@ -426,34 +435,103 @@ module tb_lte_task_ctrl_top;
   endtask
 
   //--------------------------------------------------------------------------
-  // TC6: QK 多 head — dim=32(dgc=1), ctx=32(cbc=1), heads=4, hp=1
-  //    期望: 4 groups, 4 row_dones, 4 head_tile_dones
+  // TC6: QK heads=4, hp=4 -> one full head tile, 4 active SAs
+  //    Expect 1 group, 1 row_done, 1 head_tile_done.
   //--------------------------------------------------------------------------
   task automatic tc6_qk_multihead();
     cur_tc = "TC6_QK_MHEAD";
     $display("--- %s ---", cur_tc);
-    set_qk(5, 4, 32, 32, 32'hFFFF_FFFF, 1, 1, 8'h00);
+    set_qk(5, 4, 32, 32, 32'hFFFF_FFFF, 1, 1, 8'd4, 8'd4, 8'h00);
     init_pe(5);
     reset_counters();
     do_start(5);
 
-    for (int h=0; h<4; h++) begin
-      run_group(32); clk_tick(1);
-      // head_ctr should equal h at the time of this group
-      chk_i($sformatf("head_ctr_h%0d",h), snap_head_tile_id, h);
-      run_drain(32); clk_tick(2);
-    end
+    chk_i("act_sa_full_tile", active_sa_count, 4);
+    run_group(32); clk_tick(1);
+    chk_i("head_ctr_tile0", snap_head_tile_id, 0);
+    chk1("tile0_last", snap_last_head, 1'b1);
+    run_drain(32); clk_tick(2);
 
     wait_task_done();
     engine_task_done=1; clk_tick(1); engine_task_done=0;
     clk_tick(3);
 
-    chk_i("group_cnt",  cnt_group_done, 4);
-    chk_i("row_cnt",    cnt_row_done,   4);
-    chk_i("head_cnt",   cnt_head_done,  4);
+    chk_i("group_cnt",  cnt_group_done, 1);
+    chk_i("row_cnt",    cnt_row_done,   1);
+    chk_i("head_cnt",   cnt_head_done,  1);
     chk_i("task_done",  cnt_task_done,  1);
     chk1("idle",        engine_busy,    1'b0);
     $display("[PASS] TC6");
+  endtask
+
+  //--------------------------------------------------------------------------
+  // TC7: QK heads=6, hp=4 -> two head tiles, last tile has 2 active SAs
+  //--------------------------------------------------------------------------
+  task automatic tc7_qk_partial_head_tile();
+    cur_tc = "TC7_QK_PARTIAL_TILE";
+    $display("--- %s ---", cur_tc);
+    set_qk(6, 6, 32, 32, 32'hFFFF_FFFF, 1, 1, 8'd4, 8'd2, 8'h00);
+    init_pe(6);
+    reset_counters();
+    do_start(6);
+
+    chk_i("act_sa_tile0", active_sa_count, 4);
+    run_group(32); clk_tick(1);
+    chk_i("head_ctr_tile0", snap_head_tile_id, 0);
+    chk1("tile0_not_last", snap_last_head, 1'b0);
+    run_drain(32); clk_tick(2);
+
+    chk_i("act_sa_tile1", active_sa_count, 2);
+    run_group(32); clk_tick(1);
+    chk_i("head_ctr_tile1", snap_head_tile_id, 4);
+    chk1("tile1_last", snap_last_head, 1'b1);
+    run_drain(32); clk_tick(2);
+
+    wait_task_done();
+    engine_task_done=1; clk_tick(1); engine_task_done=0;
+    clk_tick(3);
+
+    chk_i("group_cnt", cnt_group_done, 2);
+    chk_i("row_cnt",   cnt_row_done,   2);
+    chk_i("head_cnt",  cnt_head_done,  2);
+    chk_i("task_done", cnt_task_done,  1);
+    chk1("idle",       engine_busy,    1'b0);
+    $display("[PASS] TC7");
+  endtask
+
+  //--------------------------------------------------------------------------
+  // TC8: PV heads=3, hp=2 -> two head tiles, last tile has 1 head / 2 active SAs
+  //--------------------------------------------------------------------------
+  task automatic tc8_pv_partial_head_tile();
+    cur_tc = "TC8_PV_PARTIAL_TILE";
+    $display("--- %s ---", cur_tc);
+    set_pv(7, 3, 32, 64, 2, 2, 1, 32, 8'd1, 8'h00);
+    init_pe(7);
+    reset_counters();
+    do_start(7);
+
+    chk_i("act_sa_tile0", active_sa_count, 4);
+    run_group(32); clk_tick(2);
+    chk_i("head_ctr_tile0", snap_head_tile_id, 0);
+    chk1("tile0_not_last", snap_last_head, 1'b0);
+    run_drain(32); clk_tick(2);
+
+    chk_i("act_sa_tile1", active_sa_count, 2);
+    run_group(32); clk_tick(2);
+    chk_i("head_ctr_tile1", snap_head_tile_id, 2);
+    chk1("tile1_last", snap_last_head, 1'b1);
+    run_drain(32); clk_tick(2);
+
+    wait_task_done();
+    engine_task_done=1; clk_tick(1); engine_task_done=0;
+    clk_tick(3);
+
+    chk_i("group_cnt", cnt_group_done, 2);
+    chk_i("head_cnt",  cnt_head_done,  2);
+    chk_i("task_done", cnt_task_done,  1);
+    chk_i("no_rowdone", cnt_row_done,  0);
+    chk1("idle",       engine_busy,    1'b0);
+    $display("[PASS] TC8");
   endtask
 
   //--------------------------------------------------------------------------
@@ -471,6 +549,8 @@ module tb_lte_task_ctrl_top;
     tc4_pv_tail();
     tc5_illegal();
     tc6_qk_multihead();
+    tc7_qk_partial_head_tile();
+    tc8_pv_partial_head_tile();
 
     clk_tick(5);
     if (err_cnt == 0)

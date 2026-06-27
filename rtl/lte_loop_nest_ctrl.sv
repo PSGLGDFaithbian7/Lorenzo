@@ -47,6 +47,9 @@ module lte_loop_nest_ctrl #(
     input  logic [$clog2(PV_CONTEXT_GROUP_NUM_MAX+1)-1:0] pv_context_group_count,
     input  logic [$clog2(GROUP_SIZE_MAX+1)-1:0]           pv_last_inner_count,
     input  logic [$clog2(PARALLEL_MAX+1)-1:0]             hp_parallel,
+    input  logic [$clog2(PARALLEL_MAX+1)-1:0]             sa_per_head,
+    input  logic [$clog2(PARALLEL_MAX+1)-1:0]             full_active_sa_count,
+    input  logic [$clog2(PARALLEL_MAX+1)-1:0]             last_head_count,
 
     // MAC 侧: 热路径只允许 inner/group 两个计数器
     input  logic mac_fire,           // MAC 完成一次乘加返回一次 fire
@@ -62,6 +65,7 @@ module lte_loop_nest_ctrl #(
     output logic [$clog2(PV_CONTEXT_GROUP_NUM_MAX)-1:0] group_ctr_o,
     output logic [$clog2(GROUP_SIZE_MAX)-1:0]           inner_ctr_o,
     output logic [$clog2(DRAIN_LANE_NUM)-1:0]           drain_lane_ctr_o,
+    output logic [$clog2(PARALLEL_MAX+1)-1:0]           active_sa_count_o,
 
     // ---- 各层 last 状态 (本地 predecode/status, 下游优先用 token.last_*) ----
     output logic is_inner_last,
@@ -139,6 +143,8 @@ module lte_loop_nest_ctrl #(
   logic task_done_fire;
 
   logic [DRAIN_LANE_NUM-1:0] current_lane_valid_mask;
+  logic [7:0] last_active_sa_count;
+  logic [$clog2(PARALLEL_MAX+1)-1:0] last_active_sa_count_narrow;
 
   // TASK_RUN 时置高 active, 代表正在工作
   assign task_active = (state_q == TASK_RUN);
@@ -181,6 +187,9 @@ module lte_loop_nest_ctrl #(
   // QK 最后一个 context block 的 lane 不一定全有效, 用 tail mask
   assign current_lane_valid_mask =
       (qk_mode && context_last_q) ? qk_context_tail_mask : {DRAIN_LANE_NUM{1'b1}};
+  assign last_active_sa_count = qk_mode ? 8'(last_head_count) :
+                                          (8'(last_head_count) * 8'(sa_per_head));
+  assign last_active_sa_count_narrow = last_active_sa_count[$clog2(PARALLEL_MAX+1)-1:0];
 
   //----------------------------------------------------------------------------
   // 顶层状态机
@@ -308,6 +317,7 @@ module lte_loop_nest_ctrl #(
   assign group_ctr_o      = group_ctr_q[$clog2(PV_CONTEXT_GROUP_NUM_MAX)-1:0];
   assign inner_ctr_o      = inner_ctr_q;
   assign drain_lane_ctr_o = drain_lane_ctr_q;
+  assign active_sa_count_o = head_last_q ? last_active_sa_count_narrow : full_active_sa_count;
 
   // 暴露内部进位脉冲
   assign group_done_fire_o    = group_done_fire;

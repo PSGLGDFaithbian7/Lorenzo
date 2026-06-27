@@ -1,0 +1,7 @@
+Running: xsim.dir/tb_lte_tdt_decode_sim/xsimk.exe -runall -simmode gui -wdb tb_lte_tdt_decode_sim.wdb -simrunnum 0 -socket 8904
+Design successfully loaded
+Design Loading Memory Usage: 11008 KB (Peak: 11008 KB)
+Design Loading CPU Usage: 140 ms
+Simulation completed
+Simulation Memory Usage: 12796 KB (Peak: 12796 KB)
+Simulation CPU Usage: 140 ms

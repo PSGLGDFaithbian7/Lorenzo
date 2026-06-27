@@ -41,6 +41,7 @@ module lte_tdt_decode (
     output logic [31:0]  qk_context_tail_mask_o,
     output logic [15:0]  pv_context_group_count_o,
     output logic [5:0]   pv_last_inner_count_o,
+    output logic [7:0]   last_head_count_o,
 
     // ---- 合法性结果 ----
     output logic         cfg_legal_o,       // 1=全部检查通过
@@ -71,6 +72,7 @@ module lte_tdt_decode (
   assign qk_context_tail_mask_o   = tdt_rdata[79:48];
   assign pv_context_group_count_o = tdt_rdata[47:32];
   assign pv_last_inner_count_o    = tdt_rdata[31:26];
+  assign last_head_count_o        = tdt_rdata[25:18];
 
   // task_mode 的高 2 bit (用于检测非法 mode, 例如 0x2 fused 当前未实现)
   logic [3:0] task_mode_full;
@@ -90,7 +92,9 @@ module lte_tdt_decode (
   assign qk_dim_ok = (dim_o[4:0] == 5'd0) && (dim_o != 16'd0);
 
   // context 公共: context_length 非 0
+  logic num_heads_ok;
   logic ctx_len_ok;
+  assign num_heads_ok = (num_heads_o != 16'd0);
   assign ctx_len_ok = (context_length_o != 16'd0);
 
   // QK context: block count 非 0, tail mask 非 0
@@ -104,6 +108,15 @@ module lte_tdt_decode (
   assign pv_ctx_ok = (pv_context_group_count_o != 16'd0) &&
                      (pv_last_inner_count_o    >= 6'd1)  &&
                      (pv_last_inner_count_o    <= 6'd32);
+
+  logic last_head_count_ok;
+  logic hp_parallel_ok;
+  assign hp_parallel_ok = (hp_parallel_o >= 8'd1) &&
+                          (hp_parallel_o <= 8'(PARALLEL_MAX));
+  assign last_head_count_ok = (last_head_count_o >= 8'd1) &&
+                              (last_head_count_o <= 8'(PARALLEL_MAX)) &&
+                              (last_head_count_o <= hp_parallel_o) &&
+                              ({8'd0, last_head_count_o} <= num_heads_o);
 
   // PV mapping 检查 (一次性小乘法, 非热路径):
   //   head_dim>=32, head_dim%32==0, hp_parallel*head_dim==128, sa_per_head*32==head_dim
@@ -133,7 +146,13 @@ module lte_tdt_decode (
       cfg_error_code_o = ERR_ILLEGAL_GROUP_SIZE;
     end else if (is_qk && !qk_dim_ok) begin
       cfg_error_code_o = ERR_ILLEGAL_DIM;
+    end else if (!num_heads_ok) begin
+      cfg_error_code_o = ERR_ILLEGAL_CONTEXT;
     end else if (!ctx_len_ok) begin
+      cfg_error_code_o = ERR_ILLEGAL_CONTEXT;
+    end else if (!hp_parallel_ok) begin
+      cfg_error_code_o = ERR_ILLEGAL_CONTEXT;
+    end else if (!last_head_count_ok) begin
       cfg_error_code_o = ERR_ILLEGAL_CONTEXT;
     end else if (is_qk && !qk_ctx_ok) begin
       cfg_error_code_o = ERR_ILLEGAL_CONTEXT;

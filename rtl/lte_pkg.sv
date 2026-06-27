@@ -102,7 +102,8 @@ package lte_pkg;
     logic [31:0] qk_context_tail_mask;    // 最后一个 context block 的有效 lane
     logic [15:0] pv_context_group_count;  // Host 预算: ceil(ctx/32)
     logic [5:0]  pv_last_inner_count;     // 最后一个 PV group 的有效 inner 数 1..32
-    logic [7:0]  active_sa_count;         // 实际启用 SA 数 1..4
+    logic [7:0]  active_sa_count;         // Full head tile active SA count.
+    logic [7:0]  last_head_count;         // Last head tile head count from TDT reserved[25:18].
   } task_ctx_t;
 
   //----------------------------------------------------------------------------

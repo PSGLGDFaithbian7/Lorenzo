@@ -68,11 +68,11 @@ TASK_START
 资源配置按 SA 标量输入节拍确定，不按 32 个 PE lane 盲目复制：
 
 - QK：每个 active SA 1 个 input mulacc
-- PV：启用 `Hp_parallel` 个 input mulacc
+- PV：启用 `Hp_parallel * SA_per_head` 个 input mulacc
 - QK/PV drain：每个 active SA 1 个 output mulacc
 
 上述单元都沿时间轴分时复用，不在一个 SA 内复制 32 份。
-`active_sa_count` 表示当前 task 实际启用的 SA 数，范围 1..4。
+`active_sa_count` 表示当前 head tile 实际启用的 SA 数，范围 1..4。
 
 ---
 
@@ -167,7 +167,7 @@ input  logic [HP_MAX*8-1:0]     qp_data
 - QK mode：`qp_data` 表示 Q，每个有效 lane 1 个 FP8 标量
 - PV mode：`qp_data` 表示 P，每个有效 lane 1 个 FP8 标量
 - QK mode：实际有效 lane 数 = 当前 task 的 active SA 数
-- PV mode：实际有效 lane 数 = 当前 task 的 `Hp_parallel`
+- PV mode：实际有效 lane 数 = 当前 head tile 的 `active_sa_count`
 
 #### 输入累加因子流
 
@@ -179,7 +179,7 @@ input  logic [HP_MAX*8-1:0]     input_factor_data
 
 - 与 `qp_data` 同拍、同 lane 对齐
 - QK mode：作为 Q_ACC 乘加因子，有效 lane 数 = active SA 数
-- PV mode：作为 P_ACC 乘加因子，有效 lane 数 = `Hp_parallel`
+- PV mode：作为 P_ACC 乘加因子，有效 lane 数 = 当前 head tile 的 `active_sa_count`
 - 推荐实现保持与 `qp_fire` 锁步消费
 - 本 spec 默认 shared input ACC 持续维护状态，因此不得只接收 raw Q/P 而丢弃对应 factor
 
@@ -786,7 +786,7 @@ p_acc_state[HP_MAX]   ; PV mode
 - 运算精度使用 FP16
 - `q_acc_fire/p_acc_fire` 现在是乘加单元使能，而不是单纯加法器使能
 - QK：实例化 `active_sa_count` 个 input mulacc；每个 SA 逐拍接收 1 个 Q scalar 和 1 个 factor
-- PV：实例化 `Hp_parallel` 个 input mulacc；每个 mulacc 对应 1 个 head 的 P_ACC 状态
+- PV：实例化 `Hp_parallel * SA_per_head` 个 input mulacc；每个 SA 对应 1 个 head 的 P_ACC 状态
 - QK mode：
 
 ```text

@@ -1,0 +1,1 @@
+--timescale "1ns/1ps" "tb_lte_task_context" -s "tb_lte_task_context_sim" 

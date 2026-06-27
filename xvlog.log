@@ -1,0 +1,23 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_pkg.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_tdt_decode.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_tdt_decode
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_task_context.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_task_context
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_loop_nest_ctrl.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_loop_nest_ctrl
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_boundary_ctrl.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_boundary_ctrl
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_task_dispatch.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_task_dispatch
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_error_ctrl.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_error_ctrl
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_task_scoreboard.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_task_scoreboard
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_csr.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_csr
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_legacy_mux.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_legacy_mux
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/rtl/lte_task_ctrl_top.sv" into library work
+INFO: [VRFC 10-311] analyzing module lte_task_ctrl_top
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Lorenzo/tb/tb_lte_task_ctrl_top.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_lte_task_ctrl_top

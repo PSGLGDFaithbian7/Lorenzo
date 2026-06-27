@@ -41,6 +41,7 @@ module lte_task_context (
     input  logic [31:0]          qk_context_tail_mask_i,
     input  logic [15:0]          pv_context_group_count_i,
     input  logic [5:0]           pv_last_inner_count_i,
+    input  logic [7:0]           last_head_count_i,
 
     // ---- PE descriptor (128-bit, per-SA {mask_mode[1b], valid_len[6b]}) ----
     input  logic [127:0]         pe_desc_rdata,
@@ -72,13 +73,14 @@ module lte_task_context (
     end
   endgenerate
 
-  // active_sa_count: valid_len 非 0 的 SA 数 (QK 可不满; PV 合法配置下恒为 4)
-  logic [7:0] active_sa_cnt_c;
+  // Full head tile active SA count. The runtime value for the final head tile is
+  // selected later in lte_loop_nest_ctrl using last_head_count.
+  logic [7:0] full_active_sa_count_c;
   always_comb begin
-    active_sa_cnt_c = 8'd0;
-    for (int i = 0; i < NUM_SA; i++) begin
-      if (valid_len_c[i] != '0) active_sa_cnt_c = active_sa_cnt_c + 8'd1;
-    end
+    if (task_mode_i == TASK_MODE_PV)
+      full_active_sa_count_c = hp_parallel_i * sa_per_head_i;
+    else
+      full_active_sa_count_c = hp_parallel_i;
   end
 
   //----------------------------------------------------------------------------
@@ -112,7 +114,8 @@ module lte_task_context (
       ctx_q.qk_context_tail_mask   <= qk_context_tail_mask_i;
       ctx_q.pv_context_group_count <= pv_context_group_count_i;
       ctx_q.pv_last_inner_count    <= pv_last_inner_count_i;
-      ctx_q.active_sa_count        <= active_sa_cnt_c;
+      ctx_q.active_sa_count        <= full_active_sa_count_c;
+      ctx_q.last_head_count        <= last_head_count_i;
 
       valid_len_q <= valid_len_c;
       lz_flags_q  <= flags_i[3:0];
