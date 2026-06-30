@@ -3,10 +3,10 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Tue Jun 30 22:50:46 2026
-# Process ID         : 49092
+# Start of session at: Tue Jun 30 23:38:17 2026
+# Process ID         : 32956
 # Current directory  : D:/Lorenzo
-# Command line       : xsim.exe -mode tcl -source {xsim.dir/tb_lte_task_ctrl_top_sim/xsim_script.tcl}
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/tb_lte_boundary_ctrl_sim/xsim_script.tcl}
 # Log file           : D:/Lorenzo/xsim.log
 # Journal file       : D:/Lorenzo\xsim.jou
 # Running On         : LAPTOP-2OBRH9GA
@@ -19,32 +19,22 @@
 # Host memory        : 17024 MB
 # Swap memory        : 16106 MB
 # Total Virtual      : 33130 MB
-# Available Virtual  : 3237 MB
+# Available Virtual  : 3059 MB
 #-----------------------------------------------------------
-source xsim.dir/tb_lte_task_ctrl_top_sim/xsim_script.tcl
-# xsim {tb_lte_task_ctrl_top_sim} -autoloadwcfg -runall
+source xsim.dir/tb_lte_boundary_ctrl_sim/xsim_script.tcl
+# xsim {tb_lte_boundary_ctrl_sim} -autoloadwcfg -runall
 Time resolution is 1 ps
 run -all
---- TC1_QK_BASIC ---
-[PASS] TC1
---- TC2_QK_TAIL ---
-[PASS] TC2
---- TC3_PV_BASIC ---
-[PASS] TC3
---- TC4_PV_TAIL ---
-[PASS] TC4
---- TC5_ILLEGAL ---
-[PASS] TC5
---- TC6_QK_MHEAD ---
-[PASS] TC6
---- TC7_QK_PARTIAL_TILE ---
-[PASS] TC7
---- TC8_PV_PARTIAL_TILE ---
-[PASS] TC8
---- TC9_PV128_SERIAL ---
-[PASS] TC9
+[PASS] TC1: task_start events
+[PASS] TC2: registered group_done token
+[PASS] TC3: QK row_done
+[PASS] TC4: head_tile_done
+[PASS] TC5: task_done, no new group_start
+[PASS] TC6: PV mode events
+[PASS] TC7: dynamic use_input_lorenzo
+[PASS] TC8: PV dynamic full_pe_active
 
-[RESULT] tb_lte_task_ctrl_top: ALL PASS
-$finish called at time : 12736 ns : File "D:/Lorenzo/tb/tb_lte_task_ctrl_top.sv" Line 616
+[RESULT] tb_lte_boundary_ctrl: ALL PASS
+$finish called at time : 151 ns : File "D:/Lorenzo/tb/tb_lte_boundary_ctrl.sv" Line 164
 exit
-INFO: [Common 17-206] Exiting xsim at Tue Jun 30 22:50:48 2026...
+INFO: [Common 17-206] Exiting xsim at Tue Jun 30 23:38:19 2026...

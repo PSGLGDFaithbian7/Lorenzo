@@ -299,6 +299,8 @@ module lte_task_ctrl_top (
   logic bc_full_pe_active;  // 当前 block/group 是否数据满载 (供 MAC scheduler 查询)
 
   lte_boundary_ctrl u_boundary (
+    .clk                        (clk),
+    .rst_n                      (rst_n),
     .task_start                 (task_start),
     .task_mode                  (ctx.task_mode),
     .group_done_fire            (ln_group_done_fire),

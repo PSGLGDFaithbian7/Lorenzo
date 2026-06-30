@@ -3,8 +3,8 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Sun Jun 28 01:00:59 2026
-# Process ID         : 34604
+# Start of session at: Tue Jun 30 23:39:15 2026
+# Process ID         : 44768
 # Current directory  : D:/Lorenzo
 # Command line       : xsim.exe -mode tcl -source {xsim.dir/tb_lte_task_ctrl_top_sim/xsim_script.tcl}
 # Log file           : D:/Lorenzo/xsim.log
@@ -19,7 +19,32 @@
 # Host memory        : 17024 MB
 # Swap memory        : 16106 MB
 # Total Virtual      : 33130 MB
-# Available Virtual  : 5123 MB
+# Available Virtual  : 3184 MB
 #-----------------------------------------------------------
 source xsim.dir/tb_lte_task_ctrl_top_sim/xsim_script.tcl
+# xsim {tb_lte_task_ctrl_top_sim} -autoloadwcfg -runall
+Time resolution is 1 ps
 run -all
+--- TC1_QK_BASIC ---
+[PASS] TC1
+--- TC2_QK_TAIL ---
+[PASS] TC2
+--- TC3_PV_BASIC ---
+[PASS] TC3
+--- TC4_PV_TAIL ---
+[PASS] TC4
+--- TC5_ILLEGAL ---
+[PASS] TC5
+--- TC6_QK_MHEAD ---
+[PASS] TC6
+--- TC7_QK_PARTIAL_TILE ---
+[PASS] TC7
+--- TC8_PV_PARTIAL_TILE ---
+[PASS] TC8
+--- TC9_PV128_SERIAL ---
+[PASS] TC9
+
+[RESULT] tb_lte_task_ctrl_top: ALL PASS
+$finish called at time : 12736 ns : File "D:/Lorenzo/tb/tb_lte_task_ctrl_top.sv" Line 616
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Jun 30 23:39:17 2026...

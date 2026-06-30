@@ -1,0 +1,1 @@
+--timescale "1ns/1ps" "tb_lte_boundary_ctrl" -s "tb_lte_boundary_ctrl_sim" 

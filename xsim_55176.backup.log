@@ -1,0 +1,42 @@
+#-----------------------------------------------------------
+# xsim v2025.1 (64-bit)
+# SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
+# IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
+# SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
+# Start of session at: Tue Jun 30 23:34:13 2026
+# Process ID         : 55176
+# Current directory  : D:/Lorenzo
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/tb_lte_boundary_ctrl_sim/xsim_script.tcl}
+# Log file           : D:/Lorenzo/xsim.log
+# Journal file       : D:/Lorenzo\xsim.jou
+# Running On         : LAPTOP-2OBRH9GA
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26200
+# Processor Detail   : AMD Ryzen 7 5800H with Radeon Graphics         
+# CPU Frequency      : 3194 MHz
+# CPU Physical cores : 8
+# CPU Logical cores  : 16
+# Host memory        : 17024 MB
+# Swap memory        : 16106 MB
+# Total Virtual      : 33130 MB
+# Available Virtual  : 3472 MB
+#-----------------------------------------------------------
+source xsim.dir/tb_lte_boundary_ctrl_sim/xsim_script.tcl
+# xsim {tb_lte_boundary_ctrl_sim} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+[FAIL] t=36000 tc1_gs_drop got=1 exp=0
+[PASS] TC1: task_start events
+[PASS] TC2: registered group_done token
+[PASS] TC3: QK row_done
+[PASS] TC4: head_tile_done
+[PASS] TC5: task_done, no new group_start
+[FAIL] t=126000 tc6_no_row_done got=1 exp=0
+[PASS] TC6: PV mode events
+[PASS] TC7: dynamic use_input_lorenzo
+[PASS] TC8: PV dynamic full_pe_active
+
+[RESULT] tb_lte_boundary_ctrl: FAIL (2 errors)
+$finish called at time : 151 ns : File "D:/Lorenzo/tb/tb_lte_boundary_ctrl.sv" Line 164
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Jun 30 23:34:15 2026...

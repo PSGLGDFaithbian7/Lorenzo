@@ -3,8 +3,8 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Tue Jun 30 22:49:01 2026
-# Process ID         : 42760
+# Start of session at: Tue Jun 30 23:40:30 2026
+# Process ID         : 37656
 # Current directory  : D:/Lorenzo
 # Command line       : xsim.exe -mode tcl -source {xsim.dir/tb_lte_loop_nest_ctrl_sim/xsim_script.tcl}
 # Log file           : D:/Lorenzo/xsim.log
@@ -19,28 +19,7 @@
 # Host memory        : 17024 MB
 # Swap memory        : 16106 MB
 # Total Virtual      : 33130 MB
-# Available Virtual  : 3268 MB
+# Available Virtual  : 3166 MB
 #-----------------------------------------------------------
 source xsim.dir/tb_lte_loop_nest_ctrl_sim/xsim_script.tcl
-# xsim {tb_lte_loop_nest_ctrl_sim} -autoloadwcfg -runall
-Time resolution is 1 ps
 run -all
---- TC1: QK basic ---
-[PASS] TC1: QK basic, 8 groups processed
---- TC2: QK tail mask ---
-[PASS] TC2: QK tail mask
---- TC3: PV128 pv_last_inner=16 ---
-[PASS] TC3: PV128 pv_last_inner=16
---- TC4: backpressure ---
-[PASS] TC4: backpressure
---- TC5: drain lane counter ---
-[PASS] TC5: drain ctr rollover
---- TC6: PV64 heads=9 partial head tile ---
-[PASS] TC6: PV64 partial head tile
---- TC7: active_sa_count at task_start is not stale ---
-[PASS] TC7: active_sa_count at task_start is not stale
-
-[RESULT] tb_lte_loop_nest_ctrl: ALL PASS (1 checks)
-$finish called at time : 6626 ns : File "D:/Lorenzo/tb/tb_lte_loop_nest_ctrl.sv" Line 355
-exit
-INFO: [Common 17-206] Exiting xsim at Tue Jun 30 22:49:06 2026...

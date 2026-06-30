@@ -19,6 +19,9 @@
 import lte_pkg::*;
 
 module lte_boundary_ctrl (
+    input  logic                      clk,
+    input  logic                      rst_n,
+
     input  logic                      task_start,
     input  logic [1:0]                task_mode,
 
@@ -80,17 +83,52 @@ module lte_boundary_ctrl (
   //----------------------------------------------------------------------------
   // 1. 清零 / 启动脉冲
   //----------------------------------------------------------------------------
-  assign group_start     = task_start | (group_done_fire & ~task_done_fire);
-  assign row_start       = qk_mode & (task_start | (qk_block_done_fire & ~task_done_fire));
-  assign head_tile_start = task_start | (head_step_fire & ~task_done_fire);
+  logic group_start_done_q;
+  logic row_start_done_q;
+  logic head_tile_start_done_q;
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      group_start_done_q     <= 1'b0;
+      row_start_done_q       <= 1'b0;
+      head_tile_start_done_q <= 1'b0;
+    end else begin
+      group_start_done_q     <= group_done_fire    & ~task_done_fire;
+      row_start_done_q       <= qk_block_done_fire & ~task_done_fire;
+      head_tile_start_done_q <= head_step_fire     & ~task_done_fire;
+    end
+  end
+
+  assign group_start     = task_start | group_start_done_q;
+  assign row_start       = (qk_mode & task_start) | row_start_done_q;
+  assign head_tile_start = task_start | head_tile_start_done_q;
 
   //----------------------------------------------------------------------------
   // 2. 完成脉冲
   //----------------------------------------------------------------------------
-  assign group_done_pulse     = group_done_fire;
-  assign row_done_pulse       = qk_block_done_fire;
-  assign head_tile_done_pulse = head_step_fire;
-  assign task_done_pulse      = task_done_fire;
+  logic group_done_pulse_q;
+  logic row_done_pulse_q;
+  logic head_tile_done_pulse_q;
+  logic task_done_pulse_q;
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      group_done_pulse_q     <= 1'b0;
+      row_done_pulse_q       <= 1'b0;
+      head_tile_done_pulse_q <= 1'b0;
+      task_done_pulse_q      <= 1'b0;
+    end else begin
+      group_done_pulse_q     <= group_done_fire;
+      row_done_pulse_q       <= qk_mode & qk_block_done_fire;
+      head_tile_done_pulse_q <= head_step_fire;
+      task_done_pulse_q      <= task_done_fire;
+    end
+  end
+
+  assign group_done_pulse     = group_done_pulse_q;
+  assign row_done_pulse       = row_done_pulse_q;
+  assign head_tile_done_pulse = head_tile_done_pulse_q;
+  assign task_done_pulse      = task_done_pulse_q;
 
   //----------------------------------------------------------------------------
   // 3. 动态 full_pe_active 判定
@@ -120,33 +158,60 @@ module lte_boundary_ctrl (
   //----------------------------------------------------------------------------
   // 4. dequant token 打包 (group_done 那一拍)
   //----------------------------------------------------------------------------
-  assign deq_token_valid = group_done_fire;
+  logic deq_token_valid_q;
+  deq_token_meta_t deq_token_meta_q;
 
-  always_comb begin
-    deq_token_meta                  = '0;
-    deq_token_meta.mode             = ~qk_mode;
-    deq_token_meta.head_tile_id     = head_ctr;
-    deq_token_meta.context_block_id = context_ctr;
-    deq_token_meta.group_id         = group_ctr;
-    deq_token_meta.last_group       = group_done_last_group;
-    deq_token_meta.last_ctx         = group_done_last_ctx;
-    deq_token_meta.last_head        = group_done_last_head;
-    deq_token_meta.lane_valid_mask  = group_done_lane_valid_mask;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      deq_token_valid_q <= 1'b0;
+      deq_token_meta_q  <= '0;
+    end else begin
+      deq_token_valid_q <= group_done_fire;
+      if (group_done_fire) begin
+        deq_token_meta_q                  <= '0;
+        deq_token_meta_q.mode             <= ~qk_mode;
+        deq_token_meta_q.head_tile_id     <= head_ctr;
+        deq_token_meta_q.context_block_id <= context_ctr;
+        deq_token_meta_q.group_id         <= group_ctr;
+        deq_token_meta_q.last_group       <= group_done_last_group;
+        deq_token_meta_q.last_ctx         <= group_done_last_ctx;
+        deq_token_meta_q.last_head        <= group_done_last_head;
+        deq_token_meta_q.lane_valid_mask  <= group_done_lane_valid_mask;
+      end
+    end
   end
+
+  assign deq_token_valid = deq_token_valid_q;
+  assign deq_token_meta  = deq_token_meta_q;
 
   //----------------------------------------------------------------------------
   // 5. drain token 打包 (QK: row_done; PV: head_tile_done)
   //----------------------------------------------------------------------------
-  assign drain_token_valid = qk_mode ? qk_block_done_fire : head_step_fire;
+  logic drain_token_valid_q;
+  drain_token_meta_t drain_token_meta_q;
+  logic drain_token_fire;
 
-  always_comb begin
-    drain_token_meta                  = '0;
-    drain_token_meta.mode             = ~qk_mode;
-    drain_token_meta.head_tile_id     = head_ctr;
-    drain_token_meta.context_block_id = context_ctr;
-    drain_token_meta.lane_valid_mask  = qk_mode ? group_done_lane_valid_mask
-                                                 : {DRAIN_LANE_NUM{1'b1}};
-    drain_token_meta.output_mode      = output_mode;
+  assign drain_token_fire = qk_mode ? qk_block_done_fire : head_step_fire;
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      drain_token_valid_q <= 1'b0;
+      drain_token_meta_q  <= '0;
+    end else begin
+      drain_token_valid_q <= drain_token_fire;
+      if (drain_token_fire) begin
+        drain_token_meta_q                  <= '0;
+        drain_token_meta_q.mode             <= ~qk_mode;
+        drain_token_meta_q.head_tile_id     <= head_ctr;
+        drain_token_meta_q.context_block_id <= context_ctr;
+        drain_token_meta_q.lane_valid_mask  <= qk_mode ? group_done_lane_valid_mask
+                                                        : {DRAIN_LANE_NUM{1'b1}};
+        drain_token_meta_q.output_mode      <= output_mode;
+      end
+    end
   end
+
+  assign drain_token_valid = drain_token_valid_q;
+  assign drain_token_meta  = drain_token_meta_q;
 
 endmodule : lte_boundary_ctrl
