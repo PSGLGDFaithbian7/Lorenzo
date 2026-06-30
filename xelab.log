@@ -1,7 +1,7 @@
 Vivado Simulator v2025.1.0
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
-Running: E:/Vivado/2025.1/Vivado/bin/unwrapped/win64.o/xelab.exe --timescale 1ns/1ps tb_lte_loop_nest_ctrl -s tb_lte_loop_nest_ctrl_sim 
+Running: E:/Vivado/2025.1/Vivado/bin/unwrapped/win64.o/xelab.exe --timescale 1ns/1ps tb_lte_tdt_decode -s tb_lte_tdt_decode_sim 
 Multi-threading is on. Using 14 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
@@ -10,6 +10,6 @@ Starting simulation data flow analysis
 Completed simulation data flow analysis
 Time Resolution for simulation is 1ps
 Compiling package work.lte_pkg
-Compiling module work.lte_loop_nest_ctrl_default
-Compiling module work.tb_lte_loop_nest_ctrl
-Built simulation snapshot tb_lte_loop_nest_ctrl_sim
+Compiling module work.lte_tdt_decode
+Compiling module work.tb_lte_tdt_decode
+Built simulation snapshot tb_lte_tdt_decode_sim

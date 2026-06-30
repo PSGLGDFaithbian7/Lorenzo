@@ -260,6 +260,22 @@ module tb_lte_task_ctrl_top;
     clk_tick(1); // 额外 1 拍让计数器清零稳定
   endtask
 
+  // 启动 task 并在 task_start 同拍检查 active_sa_count。
+  // 这个检查覆盖“上一 task 的 last-head 状态污染下一 task 首拍”的问题。
+  task automatic do_start_expect_active(input int tid, input int exp_active_sa);
+    int to;
+    to = 0;
+    csr_task_id = 4'(tid); csr_start=1; @(posedge clk); #1; csr_start=0;
+    while (!task_start_o && to < 20) begin @(posedge clk); #1; to++; end
+    if (to >= 20) begin
+      $display("[FAIL][%s] timeout waiting task_start (tid=%0d)", cur_tc, tid);
+      err_cnt++;
+    end else begin
+      chk_i("active_sa_at_task_start", active_sa_count, exp_active_sa);
+    end
+    clk_tick(1); // 额外 1 拍让计数器清零稳定
+  endtask
+
   // 等待 task_done_pulse, 超时报错
 
   task automatic wait_task_done(input int timeout=5000);
@@ -473,7 +489,7 @@ module tb_lte_task_ctrl_top;
     set_qk(6, 6, 32, 32, 32'hFFFF_FFFF, 1, 1, 8'd4, 8'd2, 8'h00);
     init_pe(6);
     reset_counters();
-    do_start(6);
+    do_start_expect_active(6, 4);
 
     chk_i("act_sa_tile0", active_sa_count, 4);
     run_group(32); clk_tick(1);

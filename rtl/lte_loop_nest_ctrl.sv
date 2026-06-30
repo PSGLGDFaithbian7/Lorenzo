@@ -145,6 +145,8 @@ module lte_loop_nest_ctrl #(
   logic [DRAIN_LANE_NUM-1:0] current_lane_valid_mask;
   logic [7:0] last_active_sa_count;
   logic [$clog2(PARALLEL_MAX+1)-1:0] last_active_sa_count_narrow;
+  logic first_head_tile_last;
+  logic active_head_tile_last;
 
   // TASK_RUN 时置高 active, 代表正在工作
   assign task_active = (state_q == TASK_RUN);
@@ -193,6 +195,12 @@ module lte_loop_nest_ctrl #(
   assign last_active_sa_count = qk_mode ? 8'(last_head_count) :
                                           (8'(last_head_count) * 8'(sa_per_head));
   assign last_active_sa_count_narrow = last_active_sa_count[$clog2(PARALLEL_MAX+1)-1:0];
+  assign first_head_tile_last = (hp_parallel >= num_heads);
+
+  // During task_start, head_last_q still contains the previous task's final-tile
+  // state. Use the new task's first-tile predecode immediately so A-side logic
+  // samples the correct active SA count together with task_start.
+  assign active_head_tile_last = task_start ? first_head_tile_last : head_last_q;
 
   //----------------------------------------------------------------------------
   // 顶层状态机
@@ -281,13 +289,13 @@ module lte_loop_nest_ctrl #(
       head_last_q    <= 1'b0;
     end else if (task_start) begin
       context_last_q <= (qk_context_block_count <= 1);
-      head_last_q    <= (hp_parallel >= num_heads);
+      head_last_q    <= first_head_tile_last;
     end else begin
       if (qk_block_done_fire) begin
         context_last_q <= context_last_q ? (qk_context_block_count <= 1) : next_context_is_last;
       end
       if (head_step_fire) begin
-        head_last_q <= head_last_q ? (hp_parallel >= num_heads) : next_head_is_last;
+        head_last_q <= head_last_q ? first_head_tile_last : next_head_is_last;
       end
     end
   end
@@ -321,7 +329,7 @@ module lte_loop_nest_ctrl #(
   assign group_ctr_o      = group_ctr_q[$clog2(PV_CONTEXT_GROUP_NUM_MAX)-1:0];
   assign inner_ctr_o      = inner_ctr_q;
   assign drain_lane_ctr_o = drain_lane_ctr_q;
-  assign active_sa_count_o = head_last_q ? last_active_sa_count_narrow : full_active_sa_count;
+  assign active_sa_count_o = active_head_tile_last ? last_active_sa_count_narrow : full_active_sa_count;
 
   // 暴露内部进位脉冲
   assign group_done_fire_o    = group_done_fire;

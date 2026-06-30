@@ -1,7 +1,7 @@
-Running: xsim.dir/tb_lte_loop_nest_ctrl_sim/xsimk.exe -runall -simmode gui -wdb tb_lte_loop_nest_ctrl_sim.wdb -simrunnum 0 -socket 13176
+Running: xsim.dir/tb_lte_loop_nest_ctrl_sim/xsimk.exe -runall -simmode gui -wdb tb_lte_loop_nest_ctrl_sim.wdb -simrunnum 0 -socket 11478
 Design successfully loaded
-Design Loading Memory Usage: 9984 KB (Peak: 9984 KB)
-Design Loading CPU Usage: 78 ms
+Design Loading Memory Usage: 10056 KB (Peak: 10056 KB)
+Design Loading CPU Usage: 61 ms
 Simulation completed
-Simulation Memory Usage: 11784 KB (Peak: 11784 KB)
-Simulation CPU Usage: 78 ms
+Simulation Memory Usage: 11840 KB (Peak: 11840 KB)
+Simulation CPU Usage: 61 ms

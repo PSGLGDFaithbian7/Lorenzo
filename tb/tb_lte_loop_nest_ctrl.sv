@@ -89,6 +89,13 @@ module tb_lte_loop_nest_ctrl;
     task_start=1; clk_tick(1); task_start=0; clk_tick(1);
   endtask
 
+  task start_task_expect_active(input int exp_active_sa);
+    task_start=1; #1;
+    chk_i("active_sa_at_task_start", active_sa_count_o, exp_active_sa);
+    @(posedge clk); #1;
+    task_start=0; clk_tick(1);
+  endtask
+
   //============================================================
   // TC1: QK基础 dim=64(dgc=2), ctx=64(cbc=2), heads=2, hp=1
   //============================================================
@@ -302,6 +309,37 @@ module tb_lte_loop_nest_ctrl;
   endtask
 
   //============================================================
+  // TC7: previous task ended on last tile, next QK task starts with a full tile.
+  //      active_sa_count must not use stale head_last_q during task_start.
+  //============================================================
+  task tc7_start_active_sa_not_stale();
+    $display("--- TC7: active_sa_count at task_start is not stale ---");
+
+    task_mode              = TASK_MODE_QK;
+    num_heads              = 4;
+    hp_parallel            = 4;
+    full_active_sa_count   = 4;
+    sa_per_head            = 1;
+    last_head_count        = 4;
+    qk_dim_group_count     = 1;
+    qk_context_block_count = 1;
+    qk_context_tail_mask   = 32'hFFFF_FFFF;
+    pv_context_group_count = 1;
+    pv_last_inner_count    = 32;
+    start_task();
+    run_group_full(32);
+    clk_tick(1);
+
+    num_heads              = 6;
+    hp_parallel            = 4;
+    full_active_sa_count   = 4;
+    last_head_count        = 2;
+    start_task_expect_active(4);
+    chk_i("tc7_active_after_start", active_sa_count_o, 4);
+    $display("[PASS] TC7: active_sa_count at task_start is not stale");
+  endtask
+
+  //============================================================
   initial begin
     @(posedge clk); #1; rst_n=1; clk_tick(2);
     tc1_qk_basic();
@@ -310,6 +348,7 @@ module tb_lte_loop_nest_ctrl;
     tc4_backpressure();
     tc5_drain_ctr();
     tc6_pv64_partial_head_tile();
+    tc7_start_active_sa_not_stale();
 
     if (err_cnt==0) $display("\n[RESULT] tb_lte_loop_nest_ctrl: ALL PASS (%0d checks)", 1);
     else            $display("\n[RESULT] tb_lte_loop_nest_ctrl: FAIL (%0d errors)", err_cnt);
